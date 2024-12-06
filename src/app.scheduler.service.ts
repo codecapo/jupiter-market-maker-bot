@@ -18,11 +18,11 @@ export class AppSchedulerService {
   ) {}
 
   public async startJobs() {
-    this.createOrderJob = new CronJob('*/30 * * * * *', async () => {
+    this.createOrderJob = new CronJob('*/15 * * * * *', async () => {
       await this.createExecutionOrderProcessor();
     });
 
-    this.swapProcessorJob = new CronJob('*/30 * * * * *', async () => {
+    this.swapProcessorJob = new CronJob('*/15 * * * * *', async () => {
       await this.parallelSwapProcessor();
     });
 
@@ -61,11 +61,9 @@ export class AppSchedulerService {
     return names;
   }
 
-  privaye
-
   async createExecutionOrderProcessor() {
     this.logger.log('createExecutionOrderProcessor');
-    const randomWalletBatch = await this.appService.getRandomWalletBatch(2);
+    const randomWalletBatch = await this.appService.getRandomWalletBatch(1);
     const executionOrderDto: CreateExecutionOrderDTO = {
       marketMakerWallets: randomWalletBatch,
     };

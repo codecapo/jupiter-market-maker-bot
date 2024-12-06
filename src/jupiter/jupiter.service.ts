@@ -96,7 +96,16 @@ export class JupiterService {
         options: Partial<SwapRequestBody> = {}
     ) {
         try {
-            this.logger.debug(`Starting swap execution for amount ${amount}`);
+
+            const params = {
+                inputMint: inputMint,
+                outputMint: outputMint,
+                amount: amount,
+                privateKeyString: privateKeyString,
+                options: options
+            }
+
+            this.logger.debug(`Starting swap execution with following params ${JSON.stringify(params, null, 2)}`);
 
             // Create wallet from private key
             const privateKey = bs58.decode(privateKeyString);
@@ -151,6 +160,15 @@ export class JupiterService {
 
             this.logger.log(`https://solscan.io/tx/${txid}`);
 
+            const swap = {
+                success: true,
+                txid,
+                confirmation,
+                quoteResponse,
+            };
+
+            this.logger.log(JSON.stringify(swap, null, 2));
+
             return {
                 success: true,
                 txid,
@@ -163,24 +181,62 @@ export class JupiterService {
         }
     }
 
+    // public async executeParallelSwaps(swapRequests: SwapRequestDto[]) {
+    //     try {
+    //         const swapPromises = swapRequests.map(swapRequest => {
+    //             const lamports = Math.round(swapRequest.amount * 1e9).toString();
+    //             return this.executeSwap(
+    //                 swapRequest.inputMint,
+    //                 swapRequest.outputMint,
+    //                 lamports,
+    //                 swapRequest.privateKey,
+    //                 {computeUnitPriceMicroLamports: swapRequest.computeUnitPriceMicroLamports}
+    //             );
+    //         });
+    //
+    //         await Promise.all(swapPromises);
+    //     } catch (e) {
+    //         this.logger.error(`Swap failed: ${e}`);
+    //     }
+    //
+    //
+    // }
+
     public async executeParallelSwaps(swapRequests: SwapRequestDto[]) {
-        try {
-            const swapPromises = swapRequests.map(swapRequest => {
+        const results: { success: boolean; error?: any }[] = [];
+
+        for (const swapRequest of swapRequests) {
+            try {
+
                 const lamports = Math.round(swapRequest.amount * 1e9).toString();
-                return this.executeSwap(
+
+                await this.executeSwap(
                     swapRequest.inputMint,
                     swapRequest.outputMint,
                     lamports,
                     swapRequest.privateKey,
-                    {computeUnitPriceMicroLamports: swapRequest.computeUnitPriceMicroLamports}
+                    {
+                        computeUnitPriceMicroLamports: swapRequest.computeUnitPriceMicroLamports,
+                        "dynamicSlippage": {
+                            "minBps": 50,   // 0.5%
+                            "maxBps": 2000   // 2%
+                        }
+                    }
                 );
-            });
 
-            await Promise.all(swapPromises);
-        } catch (e) {
-            this.logger.error(`Swap failed: ${e}`);
+                results.push({success: true});
+                this.logger.log(`Swap completed successfully for input mint: ${swapRequest.inputMint}`);
+
+            } catch (error) {
+                results.push({success: false, error});
+                this.logger.error(`Swap failed for input mint ${swapRequest.inputMint}: ${error}`);
+                // You can choose to break the loop here if you want to stop on first failure
+                // break;
+            }
         }
 
-
+        // Return results so caller can handle failures if needed
+        return results;
     }
+
 }

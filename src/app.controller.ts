@@ -1,6 +1,7 @@
-import {BadRequestException, Controller, Get, Post} from '@nestjs/common';
+import {BadRequestException, Body, Controller, Get, Post} from '@nestjs/common';
 import { AppService } from './app.service';
 import {AppSchedulerService} from "./app.scheduler.service";
+import {AddMarketMakerWalletDto} from "./domain/dto/add-market-maker-wallet.dto";
 
 @Controller()
 export class AppController {
@@ -12,6 +13,13 @@ export class AppController {
   @Get()
   getHello(): string {
     return this.appService.getHello();
+  }
+
+  @Post('/wallet/insert-many')
+  async insertManyMarketMakerWallets(
+      @Body() marketMakerWallets: AddMarketMakerWalletDto[],
+  ) {
+    return this.appService.addMarketMakerWallets(marketMakerWallets);
   }
 
   @Post('cron/start')
