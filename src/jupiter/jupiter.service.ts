@@ -219,7 +219,7 @@ export class JupiterService {
                         computeUnitPriceMicroLamports: swapRequest.computeUnitPriceMicroLamports,
                         "dynamicSlippage": {
                             "minBps": 50,   // 0.5%
-                            "maxBps": 2000   // 2%
+                            "maxBps": 2000   // 20%
                         }
                     }
                 );
@@ -230,12 +230,8 @@ export class JupiterService {
             } catch (error) {
                 results.push({success: false, error});
                 this.logger.error(`Swap failed for input mint ${swapRequest.inputMint}: ${error}`);
-                // You can choose to break the loop here if you want to stop on first failure
-                // break;
             }
         }
-
-        // Return results so caller can handle failures if needed
         return results;
     }
 
