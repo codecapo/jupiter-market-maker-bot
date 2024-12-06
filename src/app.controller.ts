@@ -2,6 +2,7 @@ import {BadRequestException, Body, Controller, Get, Post} from '@nestjs/common';
 import { AppService } from './app.service';
 import {AppSchedulerService} from "./app.scheduler.service";
 import {AddMarketMakerWalletDto} from "./domain/dto/add-market-maker-wallet.dto";
+import {NewRandomSwapAmountRequestDto} from "./domain/dto/new-random-swap-amount-request.dto";
 
 @Controller()
 export class AppController {
@@ -20,6 +21,11 @@ export class AppController {
       @Body() marketMakerWallets: AddMarketMakerWalletDto[],
   ) {
     return this.appService.addMarketMakerWallets(marketMakerWallets);
+  }
+
+  @Post('swap-amounts/insert')
+  async insertRandomSwapAmounts(@Body() randomSwapAmount: NewRandomSwapAmountRequestDto[]) {
+    return await this.appService.deleteCurrentInsertNewRandomSwapAmount(randomSwapAmount)
   }
 
   @Post('cron/start')

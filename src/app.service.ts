@@ -8,6 +8,8 @@ import {SwapRequestDto} from "./jupiter/dto/swap.dto";
 import {AppRepo} from "./app.repo";
 import {Wallet} from "./domain/schema/wallet.schema";
 import {JupiterService} from "./jupiter/jupiter.service";
+import {RandomSwapAmount} from "./domain/schema/random-swap-amount.schema";
+import {NewRandomSwapAmountRequestDto} from "./domain/dto/new-random-swap-amount-request.dto";
 
 @Injectable()
 export class AppService {
@@ -24,41 +26,35 @@ export class AppService {
         return 'Hello World!';
     }
 
-    private selectRandomMapKey(map: Map<number, number>): { key: number; value: number } {
-        // Generate random number between 1 and 18 (inclusive)
+    // private selectRandomMapKey(map: Map<number, number>): { key: number; value: number } {
+    //     // Generate random number between 1 and 18 (inclusive)
+    //     const randomKey = Math.floor(Math.random() * 13) + 1;
+    //
+    //     // Get the value for the random key
+    //     const value = this.appRepo.getRandomSwapAmount(randomKey)
+    //
+    //     if (value === undefined) {
+    //         throw new Error(`No value found for key ${randomKey}`);
+    //     }
+    //
+    //     return {key: randomKey, value};
+    // }
+
+    private async getRandomAmount() {
         const randomKey = Math.floor(Math.random() * 13) + 1;
-
-        // Get the value for the random key
-        const value = map.get(randomKey);
-
-        if (value === undefined) {
-            throw new Error(`No value found for key ${randomKey}`);
-        }
-
-        return {key: randomKey, value};
+        const value = await this.appRepo.getRandomSwapAmount(randomKey)
+        return value.swapAmountValue
     }
 
-    private getRandomAmount() {
+    public async deleteCurrentInsertNewRandomSwapAmount(randomSwapAmounts: NewRandomSwapAmountRequestDto[]): Promise<any> {
 
-        const amounts = new Map<number, number>();
+        const mapRequests = randomSwapAmounts.map((item) => {
 
-        amounts.set(1, 0.00003)
-        amounts.set(2, 0.000033)
-        amounts.set(3, 0.00004)
-        amounts.set(4, 0.000044)
-        amounts.set(5, 0.00005)
-        amounts.set(6, 0.000055)
-        amounts.set(7, 0.000006)
-        amounts.set(8, 0.0000066)
-        amounts.set(9, 0.000007)
-        amounts.set(10, 0.0000077)
-        amounts.set(11, 0.000008)
-        amounts.set(12, 0.0000088)
-        amounts.set(13, 0.000009)
-        amounts.set(14, 0.0000092)
+            const mappedItem: RandomSwapAmount = {incrementPositionKey: item.postion, swapAmountValue: item.amount}
+            return mappedItem
+        })
 
-        return this.selectRandomMapKey(amounts);
-
+        return await this.appRepo.deleteExistingAndInsertNewRandomSwapAmounts(mapRequests);
     }
 
     public async addMarketMakerWallets(
@@ -123,8 +119,7 @@ export class AppService {
 
         if (marketMakerWallets != null) {
 
-
-            const amount = this.getRandomAmount().value
+            const amount = await this.getRandomAmount()
 
             const mappedExecutionOrderToSwapRequests =
                 marketMakerWallets.marketMakerWalletsToProcess.map((item) => {

@@ -5,6 +5,7 @@ import { Model } from 'mongoose';
 import {ExecutionOrder, ExecutionOrderDocument} from "./domain/schema/execution-order.schema";
 import {Wallet, WalletDocument} from "./domain/schema/wallet.schema";
 import {MarketMakerWalletMinMaxIncrementIdsDo} from "./domain/do/market-maker-wallet-min-max-increment-ids.do";
+import {RandomSwapAmount, RandomSwapAmountDocument} from "./domain/schema/random-swap-amount.schema";
 
 
 @Injectable()
@@ -13,6 +14,8 @@ export class AppRepo {
     @InjectModel(Wallet.name) private walletModel: Model<WalletDocument>,
     @InjectModel(ExecutionOrder.name)
     private executionOrderModel: Model<ExecutionOrderDocument>,
+    @InjectModel(RandomSwapAmount.name) private readonly randomSwapAmountModel: Model<RandomSwapAmountDocument>,
+
   ) {}
 
   public async addMarketMakerWallet(marketMakerWallets: Wallet[]) {
@@ -72,5 +75,14 @@ export class AppRepo {
 
   public async getWallet(incrementId: number): Promise<WalletDocument> {
     return this.walletModel.findOne({ incrementId: incrementId });
+  }
+
+  public async deleteExistingAndInsertNewRandomSwapAmounts(randomSwapAmount: RandomSwapAmount[]) {
+    await this.randomSwapAmountModel.deleteMany({})
+    return await this.randomSwapAmountModel.insertMany(randomSwapAmount)
+  }
+
+  public async getRandomSwapAmount(position: number) {
+    return this.randomSwapAmountModel.findOne({incrementPositionKey: position});
   }
 }

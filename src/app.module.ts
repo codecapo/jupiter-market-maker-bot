@@ -11,6 +11,7 @@ import {MongooseModule} from "@nestjs/mongoose";
 import {Wallet, WalletSchema} from "./domain/schema/wallet.schema";
 import {ExecutionOrder, ExecutionOrderSchema} from "./domain/schema/execution-order.schema";
 import {EventEmitterModule} from "@nestjs/event-emitter";
+import {RandomSwapAmount, RandomSwapAmountSchema} from "./domain/schema/random-swap-amount.schema";
 
 @Module({
 
@@ -21,6 +22,7 @@ import {EventEmitterModule} from "@nestjs/event-emitter";
     MongooseModule.forFeature([
       { name: Wallet.name, schema: WalletSchema },
       { name: ExecutionOrder.name, schema: ExecutionOrderSchema },
+      { name: RandomSwapAmount.name, schema: RandomSwapAmountSchema },
     ]),
     EventEmitterModule.forRoot({
       wildcard: true,
